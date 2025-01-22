@@ -17,15 +17,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 				<set-variable value="#[payload.caseId]" doc:name="Set caseId Variable" doc:id="7926d9df-0067-42e0-98f2-49b962e054d8" variableName="caseId"/>
 				<ee:transform doc:name="Prepare to upload Id Docs" doc:id="8d002495-17f1-4b56-bda0-1d3d16472db7">
 					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"bucketName": "uho-covid-docs",
-	"folderPath": "identity",
-	"fileName": vars.caseId ++".png",
-	"document": vars.requestPayload.iDoc
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/upload_to_aws.dwl" />
 					</ee:message>
 				</ee:transform>
 				<flow-ref doc:name="upload-document-aws-sapi-subflow" doc:id="7ae03e13-5eca-49a3-8e52-f4d603b87359" name="upload-document-aws-sapi-subflow" />
@@ -47,18 +39,7 @@ vars.requestPayload ++ {caseId: vars.caseId}
 		</choice>
 		<ee:transform doc:name="prepare to update WHO" doc:id="8ab85bbb-c7d0-4f45-90bc-852daed0d6d3">
 							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-   "caseType":vars.requestPayload.caseType,
-   "firstName":vars.requestPayload.firstName,
-   "lastName":vars.requestPayload.lastName,
-   "phone":vars.requestPayload.phone,
-   "email":vars.requestPayload.email,
-   "dateOfBirth":vars.requestPayload.dateOfBirth,
-   "country":"USA"
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/report_to_who.dwl" />
 							</ee:message>
 						</ee:transform>
 		<flow-ref doc:name="report-to-who-subflow" doc:id="830edf3b-3440-44cd-9fa1-d01da80a267e" name="report-to-who-subflow" />

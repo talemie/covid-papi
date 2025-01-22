@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="upload-document-aws-sapi-subflow" doc:id="99b4653d-4466-4d72-8f14-d9eeef540065" >
+		<logger level="INFO" doc:name="start" doc:id="9f0d8fbd-89f2-4698-b773-f7c09758d2c3" message="Upload document start transactionId: #[vars.transactionId]"/>
+		<http:request method="POST" doc:name="Upload Id document" doc:id="d9aa20fa-e30e-4e5f-a512-91ddcbc6337d" config-ref="HTTP_Request_aws-sapi_configuration" path="#[Mule::p('http.requester.aws-sapi.upload-doc-path')]">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-correlation-id" : vars.correlationId,
+	"client_secret" : vars.clientSecret,
+	"x-transaction-id" : vars.transactionId,
+	"client_id" : vars.clientId
+}]]]></http:headers>
+				</http:request>
+		<logger level="INFO" doc:name="end" doc:id="40a9c784-3721-4856-9464-b5f7dd0ec11d" message="Upload document end transactionId: #[vars.transactionId]" />
+	</sub-flow>
+</mule>

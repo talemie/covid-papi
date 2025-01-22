@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="report-to-who-subflow" doc:id="de0a086f-445f-4c89-96e4-803d0fc736f8" >
+		<logger level="INFO" doc:name="start" doc:id="ab7e00a9-ae83-4fe1-a480-94d422d5bc85" message="report to who sapi start transactionId:  #[vars.transactionId]"/>
+		<http:request method="POST" doc:name="report to WHO" doc:id="049847d2-b2da-4234-8135-884a7b097977" config-ref="HTTP_Request_who-sapi_configuration" path="#[Mule::p('http.requester.who-sapi.add-report-path')]">
+							<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-correlation-id" : vars.correlationId,
+	"client_secret" : vars.clientSecret,
+	"x-transaction-id" : vars.transactionId,
+	"client_id" : vars.clientId
+}]]]></http:headers>
+						</http:request>
+		<logger level="INFO" doc:name="end" doc:id="09f5c563-b1d0-4e03-ba82-037e5a632ffe" message="report to who sapi end transactionId:  #[vars.transactionId]" />
+	</sub-flow>
+</mule>

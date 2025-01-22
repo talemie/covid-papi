@@ -1,0 +1,26 @@
+http:
+  port: "8084"
+  host: "localhost"
+  requester:
+    uhub-sapi:      
+      host: "localhost"
+      port: "8081"
+      get-case-by-id-path: "/v1/cases/"
+      update-cases-path: "/v1/cases"
+      add-cases-path: "/v1/cases"
+    aws-sapi:
+      upload-doc-path: "/v1/document"
+      host: "localhost"
+      port: "8082"
+    who-sapi:
+      host: "localhost"
+      port: "8083"
+      add-report-path: "/v1/cases"
+database:
+  uhub:
+    database: "uhocovid"
+    host: "localhost"
+    port: "3306"
+    user: "root"
+    password: "![C29jI3aPwCkKTHkRkzFcow==]"
+    instance: "XE"

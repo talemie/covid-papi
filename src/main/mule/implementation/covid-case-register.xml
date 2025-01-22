@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="post:\cases:application\json:covid-papi-config">
+        <logger level="INFO" doc:name="start" doc:id="69e1c93a-b664-4f6e-81d2-88441e5d9167" message="transactionId : #[vars.transactionId]: correlationId: #[vars.correlationId], started the covid-papi flow"/>
+		<set-variable value="#[Mule::p('http.requester.uhub-sapi.get-case-by-id-path') ++ (vars.nationalId default &quot;&quot;)]" doc:name="Set checkCaseByIdPath Variable" doc:id="60a9b9f4-e0ad-4990-9d26-44181ef3dd20" variableName="checkCaseByIdPath"/>
+		<flow-ref doc:name="check-case-subflow" doc:id="fd6b7957-a0dc-4943-968f-11e7d6dd1aa1" name="check-case-subflow" />
+		<choice doc:name="Choice" doc:id="b2d59976-a7a2-41f5-a583-b68eebb5400b" >
+			<when expression="#[isEmpty(vars.checkResult)]">
+				<set-variable value="#[Mule::p('http.requester.uhub-sapi.add-cases-path')]" doc:name="Set addCasePath Variable" doc:id="c759ef7f-0e1e-44de-ab5f-b1667c2dea5c" variableName="addCasePath"/>
+				<flow-ref doc:name="add-case-subflow" doc:id="06569f13-8c37-43b6-9cf9-aea5ed5408ea" name="add-case-subflow" />
+				<set-variable value="#[payload.caseId]" doc:name="Set caseId Variable" doc:id="7926d9df-0067-42e0-98f2-49b962e054d8" variableName="caseId"/>
+				<ee:transform doc:name="Prepare to upload Id Docs" doc:id="8d002495-17f1-4b56-bda0-1d3d16472db7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bucketName": "uho-covid-docs",
+	"folderPath": "identity",
+	"fileName": vars.caseId ++".png",
+	"document": vars.requestPayload.iDoc
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="upload-document-aws-sapi-subflow" doc:id="7ae03e13-5eca-49a3-8e52-f4d603b87359" name="upload-document-aws-sapi-subflow" />
+			</when>
+			<otherwise >
+				<set-variable value="#[vars.checkResult[0].caseId]" doc:name="Set caseId Variable" doc:id="673215cf-3eec-478b-8970-19dfdc9fd521" variableName="caseId"/>
+				<ee:transform doc:name="Transform Message" doc:id="c8accb90-cc4b-4a9f-a009-17c33dba7321">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.requestPayload ++ {caseId: vars.caseId}
+	
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="update-case-uhub-sapi-subflow" doc:id="a96ead95-557f-47f5-bc23-c614c89edfca" name="update-case-uhub-sapi-subflow" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="prepare to update WHO" doc:id="8ab85bbb-c7d0-4f45-90bc-852daed0d6d3">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "caseType":vars.requestPayload.caseType,
+   "firstName":vars.requestPayload.firstName,
+   "lastName":vars.requestPayload.lastName,
+   "phone":vars.requestPayload.phone,
+   "email":vars.requestPayload.email,
+   "dateOfBirth":vars.requestPayload.dateOfBirth,
+   "country":"USA"
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+		<flow-ref doc:name="report-to-who-subflow" doc:id="830edf3b-3440-44cd-9fa1-d01da80a267e" name="report-to-who-subflow" />
+		<ee:transform doc:name="Final Reponse" doc:id="082c6bc0-ae6f-4b01-886b-24699ea56497" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"RegistrationId": vars.caseId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="end" doc:id="60075a83-1e4e-4a0b-aefc-5420438865bf" message="transactionId : #[vars.transactionId]: correlationId: #[vars.correlationId], end the covid-papi flow" />
+    
+</flow>
+	</mule>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+     <http:listener-config name="covid-papi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="covid-papi-config" api="resource::8e78bbc8-866e-4707-ae22-32ada1d67ba2:covid-papi:1.0.0:raml:zip:covid-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+   
+	<configuration-properties doc:name="Configuration properties" doc:id="572c7959-53ae-484a-811e-62dd178915ca" file="config/${env}.yaml" />
+	<configuration doc:name="Configuration" doc:id="1a164aa7-e48d-4f82-9b49-478a2ae7e86f" defaultErrorHandler-ref="global-error-handler" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="eef9dfdf-e521-495b-b644-5cc0740119ac" file="config/${env}.yaml" key="${secure.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<http:request-config name="HTTP_Request_uhub-sapi_configuration" doc:name="HTTP Request configuration" doc:id="e65ae6d9-d682-4574-9bdd-9f3872827d02" >
+		<http:request-connection host="${http.requester.uhub-sapi.host}" port="${http.requester.uhub-sapi.port}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_aws-sapi_configuration" doc:name="HTTP Request configuration" doc:id="9a698789-69d1-4050-a5b6-699627b47b5d" >
+		<http:request-connection host="${http.requester.aws-sapi.host}" port="${http.requester.aws-sapi.port}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_who-sapi_configuration" doc:name="HTTP Request configuration" doc:id="ba1a3a62-6243-490c-8749-541d10acfb02" >
+		<http:request-connection host="${http.requester.who-sapi.host}" port="${http.requester.who-sapi.port}" />
+	</http:request-config>
+  
+	
+</mule>

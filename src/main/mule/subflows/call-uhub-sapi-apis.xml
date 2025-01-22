@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="update-case-uhub-sapi-subflow" doc:id="3c19853e-3507-477e-8d2a-a2408b277ba9" >
+		<logger level="INFO" doc:name="start" doc:id="6daca4b7-5786-4e47-afa0-1ddcbc84e4ed" message="calling uhub-sapi from covid-papi to update the case start transactionId: #[vars.transactionId]"/>
+		<http:request method="PUT" doc:name="Update a case" doc:id="2cfb384c-7a23-4079-8d5d-334af06a8c03" config-ref="HTTP_Request_uhub-sapi_configuration" path="#[Mule::p('http.requester.uhub-sapi.update-cases-path')]">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-correlation-id" : vars.correlationId,
+	"client_secret" : vars.clientSecret,
+	"x-transaction-id" : vars.transactionId,
+	"client_id" : vars.clientId
+}]]]></http:headers>
+				</http:request>
+		<logger level="INFO" doc:name="end" doc:id="ee013128-db40-4640-82a2-a462dc86b9d2" message="calling uhub-sapi from covid-papi to update the case end transactionId: #[vars.transactionId]" />
+	</sub-flow>
+	<sub-flow name="check-case-subflow" doc:id="2b4eaa1d-9068-41d3-9ebf-7612df539c2e" >
+		<logger level="INFO" doc:name="check case start" doc:id="c79af129-29aa-4144-bb4c-a1f09d850f4b" message="calling uhub-sapi from covid-papi to check the case start transactionId: #[vars.transactionId]" />
+		<http:request method="GET" doc:name="Check Case by National Id" doc:id="140afb0a-a1e0-4ec8-bf6e-8de6d324910f" config-ref="HTTP_Request_uhub-sapi_configuration" path="#[vars.checkCaseByIdPath]" target="checkResult">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-correlation-id" : vars.correlationId,
+	"client_secret" : vars.clientSecret,
+	"x-transaction-id" : vars.transactionId,
+	"client_id" : vars.clientId
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="check case end" doc:id="5d3167bb-285b-4cc9-bdb4-26d8ce5e4242" message="calling uhub-sapi from covid-papi to check the case end transactionId: #[vars.transactionId]" />
+	</sub-flow>
+	<sub-flow name="add-case-subflow" doc:id="f7776fbf-71f0-4955-8baf-95a03aae63ee" >
+		<logger level="INFO" doc:name="add case start" doc:id="29ee9e8a-724f-4858-a19a-6070577a96b6" message="add case at covid-papi start transactionId: #[vars.transactionId]"/>
+		<http:request method="POST" doc:name="Add a case" doc:id="58e4c2c1-d3f5-4fb2-a4ef-62614776ed4c" config-ref="HTTP_Request_uhub-sapi_configuration" path="#[vars.addCasePath]">
+					<http:body><![CDATA[#[vars.requestPayload]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-correlation-id" : vars.correlationId,
+	"client_secret" : vars.clientSecret,
+	"x-transaction-id" : vars.transactionId,
+	"client_id" : vars.clientId
+}]]]></http:headers>
+				</http:request>
+		<logger level="INFO" doc:name="add case end" doc:id="135e8c82-b4f8-453a-98c5-2032e0dbafea" message="add case at covid-papi end transactionId: #[vars.transactionId]" />
+	</sub-flow>
+</mule>
